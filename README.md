@@ -1,7 +1,6 @@
 # Portafolio 3D isométrico
 
-Proyecto modular con Three.js (r160, módulos ES), GSAP y Tailwind. Carga **tu habitación en `.glb`**
-y, si el archivo no existe o falla, usa una habitación procedural de respaldo.
+Proyecto modular con Three.js (r160, módulos ES), GSAP y Tailwind.
 
 ## Estructura
 
