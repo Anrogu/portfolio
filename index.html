@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angel — Portafolio 3D</title>
+    <meta name="description" content="Portafolio de Angel: desarrollo de software y experiencias web interactivas en 3D.">
+    <meta name="theme-color" content="#f5efe6" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#121324" media="(prefers-color-scheme: dark)">
+
+    <!-- Open Graph / redes sociales -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Angel — Portafolio 3D">
+    <meta property="og:description" content="Desarrollo de software y experiencias web interactivas en 3D.">
+    <meta property="og:locale" content="es_MX">
+    <!-- TODO: añade una imagen 1200x630 y tu URL final:
+    <meta property="og:image" content="https://tu-dominio.com/og.jpg">
+    <meta property="og:url" content="https://tu-dominio.com/">
+    <meta name="twitter:card" content="summary_large_image"> -->
+
+    <!-- Favicon (emoji en SVG; reemplázalo por tu logo cuando lo tengas) -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%A0%3C/text%3E%3C/svg%3E">
+
+    <!-- Tema antes del primer pintado (evita el parpadeo). La clave debe coincidir con CONFIG.storageKey. -->
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('portfolio-theme');
+                var night = saved ? saved === 'night' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var cl = document.documentElement.classList;
+                cl.toggle('dark', night);
+                cl.toggle('light', !night);
+            } catch (e) { /* sin localStorage */ }
+        })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Tailwind por CDN, versión fijada. Para producción: Tailwind CLI o Vite. -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="./tailwind.config.js"></script>
+    <link rel="stylesheet" href="./src/styles.css">
+
+    <!-- Three.js moderno como módulo ES (versión fijada) -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body class="antialiased selection:bg-accent selection:text-white">
+
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[70] focus:px-4 focus:py-2 focus:rounded-xl focus:bg-accentStrong focus:text-white">
+        Saltar al contenido
+    </a>
+
+    <!-- Loader: se oculta cuando la habitación está lista -->
+    <div id="loader" role="status" aria-live="polite" aria-busy="true" class="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-4 bg-cream dark:bg-night">
+        <p id="loader-text" class="text-sm font-semibold">Cargando…</p>
+        <div class="h-1.5 w-56 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden" aria-hidden="true">
+            <div id="loader-bar" class="h-full w-0 bg-accentStrong transition-all duration-300"></div>
+        </div>
+    </div>
+
+    <!-- Canvas 3D fijo (decorativo) -->
+    <div id="webgl-container" aria-hidden="true"></div>
+
+    <!-- Barra de progreso de scroll (decorativa) -->
+    <div class="fixed left-0 top-0 h-1.5 bg-gradient-to-r from-accent via-amber-500 to-emerald-400 z-50 w-full scale-x-0 origin-left" id="scroll-bar" aria-hidden="true"></div>
+
+    <header class="fixed top-0 left-0 w-full z-40 px-4 sm:px-8 py-4 flex items-center justify-between pointer-events-none">
+        <a href="#hero" class="interactive-el glass-card px-4 py-2.5 rounded-2xl flex items-center gap-3 group hover:scale-105 transition-transform">
+            <span class="w-3.5 h-3.5 rounded-full bg-accent group-hover:animate-ping" aria-hidden="true"></span>
+            <span class="font-bold tracking-tight text-sm sm:text-base">Angel</span>
+        </a>
+
+        <div class="flex items-center gap-2.5 sm:gap-4 interactive-el">
+            <button id="btn-rotate-room" data-needs-webgl type="button" aria-label="Girar la habitación 90 grados" class="glass-card p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl flex items-center gap-2 text-xs sm:text-sm font-semibold hover:border-accent transition-all active:scale-95">
+                <svg class="w-4 h-4 ink-accent" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                <span class="hidden sm:inline">Girar vista</span>
+            </button>
+
+            <button id="theme-toggle" type="button" aria-pressed="false" aria-label="Modo noche" class="glass-card relative w-20 sm:w-24 h-10 sm:h-11 rounded-2xl cursor-pointer border-2 border-transparent hover:border-accent/40 transition-all">
+                <span id="theme-thumb" class="absolute left-1.5 top-1/2 w-7 h-7 sm:w-8 sm:h-8 -mt-3.5 sm:-mt-4 rounded-xl bg-accentStrong text-white flex items-center justify-center shadow-md">
+                    <svg id="icon-sun" class="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <path stroke-linecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                    </svg>
+                    <svg id="icon-moon" class="w-4 h-4 sm:w-5 sm:h-5 hidden" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </span>
+                <span id="theme-label" aria-hidden="true" class="hidden sm:block absolute top-1/2 -translate-y-1/2 right-3 text-[11px] font-bold uppercase tracking-wider select-none">Día</span>
+            </button>
+        </div>
+    </header>
+
+    <main id="main" class="page-content">
+
+        <!-- HERO -->
+        <section id="hero" class="min-h-screen w-full flex flex-col justify-between px-6 sm:px-12 lg:px-24 pt-28 pb-12 relative">
+            <div class="max-w-xl">
+                <!-- TODO: ajusta o elimina este mensaje según tu disponibilidad real -->
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-card text-xs font-semibold uppercase tracking-widest ink-accent mb-4">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true"></span>
+                    Disponible para nuevos proyectos
+                </div>
+                <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight leading-[1.1]">
+                    Hola, soy <span class="ink-accent">Angel</span>.<br>
+                    Desarrollador de software.
+                </h1>
+                <p class="mt-4 text-sm sm:text-base opacity-85 max-w-md leading-relaxed font-medium">
+                    Esta es mi habitación en 3D. Haz scroll para recorrerla o cambia entre el modo día y noche.
+                </p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 w-full">
+                <div data-needs-webgl class="glass-card px-4 py-3 rounded-2xl text-xs flex items-center gap-3 interactive-el">
+                    <span class="p-2 rounded-xl bg-accent/15 ink-accent font-mono font-bold">TIP</span>
+                    <div>
+                        <p class="font-semibold">Mueve el cursor o toca la pantalla</p>
+                        <p class="opacity-80">La habitación reacciona con un efecto parallax suave.</p>
+                    </div>
+                </div>
+
+                <p id="webgl-fallback" role="status" hidden class="glass-card px-4 py-3 rounded-2xl text-xs interactive-el">
+                    Tu navegador no puede mostrar la escena 3D. El resto del contenido sigue disponible.
+                </p>
+
+                <a href="#about" class="interactive-el glass-card px-5 py-3 rounded-2xl flex items-center gap-3 text-xs sm:text-sm font-bold hover:border-accent transition-all group self-center sm:self-auto">
+                    <span>Desliza para explorar</span>
+                    <svg class="w-4 h-4 ink-accent animate-bounce-slow" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                    </svg>
+                </a>
+            </div>
+        </section>
+
+        <!-- SOBRE MÍ -->
+        <section id="about" aria-labelledby="about-title" class="min-h-screen w-full flex items-center px-6 sm:px-12 lg:px-24 py-24">
+            <div class="w-full lg:w-5/12 glass-card p-7 sm:p-10 rounded-3xl interactive-el">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-accentStrong text-white">01</span>
+                    <span class="text-xs font-bold uppercase tracking-widest opacity-75">Sobre mí</span>
+                </div>
+                <h2 id="about-title" class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-4">
+                    Título de tu presentación.
+                </h2>
+                <!-- TODO: escribe aquí quién eres y qué construyes, en 2 o 3 frases -->
+                <p class="text-sm sm:text-base opacity-90 leading-relaxed mb-6">
+                    Cuéntale al visitante quién eres, qué tipo de proyectos construyes y qué te diferencia.
+                </p>
+
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="p-3.5 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10">
+                        <div class="text-xs font-mono uppercase opacity-75 mb-1">Especialidad</div>
+                        <div class="font-bold text-sm">Tu especialidad principal</div>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10">
+                        <div class="text-xs font-mono uppercase opacity-75 mb-1">Herramientas</div>
+                        <div class="font-bold text-sm">Tus herramientas clave</div>
+                    </div>
+                </div>
+
+                <!-- Se oculta solo si tu .glb no tiene mallas "screen*" (ver README) -->
+                <div data-needs-screens class="p-4 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider ink-accent">Interactúa con mi escritorio</p>
+                        <p class="text-xs opacity-85 mt-0.5">Cambia el color de las pantallas en tiempo real.</p>
+                    </div>
+                    <button id="btn-change-screen" type="button" class="px-3.5 py-2 rounded-xl bg-accentStrong text-white text-xs font-bold hover:opacity-90 active:scale-95 transition shrink-0">
+                        Cambiar pantalla
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROYECTOS (las tarjetas se generan desde src/content.js) -->
+        <section id="projects" aria-labelledby="projects-title" class="min-h-screen w-full flex items-center justify-end px-6 sm:px-12 lg:px-24 py-24">
+            <div class="w-full lg:w-6/12 glass-card p-7 sm:p-10 rounded-3xl interactive-el">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-700 text-white">02</span>
+                    <span class="text-xs font-bold uppercase tracking-widest opacity-75">Proyectos</span>
+                </div>
+                <h2 id="projects-title" class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-6">
+                    Lo que he construido
+                </h2>
+                <ul id="projects-list" class="space-y-4"></ul>
+            </div>
+        </section>
+
+        <!-- CONTACTO -->
+        <section id="contact" aria-labelledby="contact-title" class="min-h-screen w-full flex flex-col justify-between px-6 sm:px-12 lg:px-24 py-24">
+            <div class="my-auto w-full max-w-lg glass-card p-7 sm:p-10 rounded-3xl interactive-el">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-700 text-white">03</span>
+                    <span class="text-xs font-bold uppercase tracking-widest opacity-75">Contacto</span>
+                </div>
+                <h2 id="contact-title" class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">
+                    ¿Hablamos?
+                </h2>
+                <p class="text-xs sm:text-sm opacity-85 mb-6">
+                    Cuéntame qué tienes en mente y te respondo por correo.
+                </p>
+
+                <form id="contact-form" class="space-y-3.5">
+                    <div>
+                        <label for="contact-name" class="block text-xs font-bold uppercase tracking-wider opacity-80 mb-1">Tu nombre</label>
+                        <input id="contact-name" name="name" type="text" required autocomplete="name" placeholder="Ej. Sofía Ramírez" class="w-full px-4 py-2.5 rounded-xl bg-white/60 dark:bg-black/30 border border-black/10 dark:border-white/10 text-sm focus:outline-none focus:border-accent">
+                    </div>
+                    <div>
+                        <label for="contact-email" class="block text-xs font-bold uppercase tracking-wider opacity-80 mb-1">Correo electrónico</label>
+                        <input id="contact-email" name="email" type="email" required autocomplete="email" placeholder="hola@ejemplo.com" class="w-full px-4 py-2.5 rounded-xl bg-white/60 dark:bg-black/30 border border-black/10 dark:border-white/10 text-sm focus:outline-none focus:border-accent">
+                    </div>
+                    <div>
+                        <label for="contact-message" class="block text-xs font-bold uppercase tracking-wider opacity-80 mb-1">Mensaje</label>
+                        <textarea id="contact-message" name="message" rows="4" required placeholder="¿En qué te puedo ayudar?" class="w-full px-4 py-2.5 rounded-xl bg-white/60 dark:bg-black/30 border border-black/10 dark:border-white/10 text-sm focus:outline-none focus:border-accent resize-y"></textarea>
+                    </div>
+                    <!-- Honeypot anti-spam: los humanos no lo ven -->
+                    <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden">
+                    <button type="submit" class="w-full py-3 rounded-xl bg-accentStrong hover:bg-accentStrong/90 disabled:opacity-60 text-white font-bold text-sm shadow-lg shadow-accent/25 transition-all active:scale-95">
+                        Enviar mensaje
+                    </button>
+                    <!-- Región live: siempre presente para que los lectores de pantalla anuncien el cambio -->
+                    <p id="form-feedback" role="status" aria-live="polite" class="min-h-[1.25rem] text-xs font-semibold text-center pt-1"></p>
+                </form>
+            </div>
+
+            <footer class="w-full flex flex-col sm:flex-row items-center justify-between gap-4 text-xs opacity-80 pt-8 interactive-el">
+                <p>© <span id="year"></span> Angel. Todos los derechos reservados.</p>
+                <a href="#hero" class="hover:underline font-semibold">Volver arriba ↑</a>
+            </footer>
+        </section>
+    </main>
+
+    <noscript>
+        <p class="fixed bottom-4 left-4 right-4 z-[70] p-3 rounded-xl bg-amber-100 text-amber-900 text-sm text-center">
+            Este sitio necesita JavaScript para mostrar la escena 3D.
+        </p>
+    </noscript>
+
+    <!-- Si el módulo no arranca (CDN caído, navegador antiguo), el loader no bloquea la página -->
+    <script>
+        setTimeout(function () {
+            var l = document.getElementById('loader');
+            if (l && !window.__ready) l.remove();
+        }, 15000);
+    </script>
+
+    <!-- GSAP como scripts clásicos (versiones fijas); quedan listos antes del módulo -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script type="module" src="./src/main.js"></script>
+</body>
+</html>
