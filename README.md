@@ -1,119 +1,59 @@
-# Portafolio 3D isométrico
+# 🐟 Interactive 3D Web Portfolio
 
-Proyecto modular con Three.js (r160, módulos ES), GSAP y Tailwind.
+Welcome to my personal portfolio! This project is an immersive, 3D interactive web experience featuring a custom-designed, low-poly anglerfish. It showcases my work and skills through dynamic scroll-based camera navigation and real-time 3D rendering in the browser.
 
-## Estructura
+## 🚀 Key Features
 
-```
-index.html            Página, meta/OG, importmap, loader
-tailwind.config.js    Colores y fuentes (CDN)
-models/room.glb       <- aquí va tu habitación
-src/
-  config.js           TODOS los valores ajustables (cámara, luces, temas, scroll, glb, contacto)
-  content.js          Proyectos del portafolio
-  main.js             Arranque, fallback sin WebGL, loader
-  scene.js            Renderer, cámara, luces, grupos, bucle de render
-  room.js             Carga del .glb, hooks por nombre, habitación procedural
-  motion.js           Parallax del puntero y balanceo de objetos
-  scroll.js           Animaciones por sección (GSAP ScrollTrigger)
-  theme.js            Día/noche (preferencia del sistema + localStorage)
-  ui.js               Proyectos, formulario, controles ligados a la escena
-  styles.css          Estilos propios
-```
+*   **Immersive 3D Environment:** Navigate through a scene built around a custom low-poly anglerfish mesh.
+*   **Scroll-Driven Navigation:** Camera movements, object rotations, and scene transitions are tightly bound to the user's scroll position.
+*   **Fluid Scrolling:** Features a smooth, frictionless scrolling mechanic for a premium user experience.
+*   **Optimized Web Rendering:** Lightweight 3D assets designed specifically for fast web performance without sacrificing visual quality.
 
-## Ejecutar en local
+## 🛠️ Tech Stack
 
-Los módulos ES y el `.glb` **no funcionan abriendo el archivo con `file://`**. Usa un servidor:
+This portfolio bridges the gap between 3D modeling and modern web development:
 
-```bash
-cd portafolio-3d
-npx serve .
-# o: python3 -m http.server 8080
-```
+*   **3D Modeling:** Blender 🧊
+*   **WebGL & 3D Rendering:** Three.js 🌐
+*   **Animations:** GSAP (ScrollTrigger) 🎬
+*   **Smooth Scroll:** Lenis 📜
 
-## Poner tu habitación
+## ⚙️ Prerequisites
 
-1. Exporta desde Blender a `models/room.glb` (ver abajo).
-2. Abre la página. En la consola (F12) verás un resumen: pantallas, lámpara, monitores, silla y
-   materiales horneados detectados. Si algo sale en `false` o `0`, revisa los nombres.
-3. Ajusta `CONFIG.glb` en `src/config.js`.
+To run this project locally, ensure you have the following installed:
 
-### Exportar desde Blender
+*   [Node.js](https://nodejs.org/)
+*   npm (or yarn/pnpm)
 
-- Selecciona todo y aplica transformaciones: `Ctrl + A → All Transforms`.
-- `File → Export → glTF 2.0 (.glb)`, formato **glTF Binary (.glb)**, activa **+Y Up** (por defecto).
-- Con muchos polígonos, activa **Compression (Draco)**; el decoder ya está configurado.
-- Si usas texturas horneadas: exporta la textura en JPG/PNG de tamaño razonable (2048 o 4096) y
-  pon `baked: true` en `CONFIG.glb`.
+## 📦 Installation & Local Development
 
-### Convención de nombres de objetos
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Anrogu/portfolio.git
+   cd portfolio
+   ```
 
-Todo es opcional. Lo que no exista simplemente no se anima.
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-| Nombre en Blender | Tipo | Qué hace |
-|---|---|---|
-| `screen*` (p. ej. `screen_left`) | malla | Recibe el color de pantalla que cambia el botón "Cambiar pantalla" |
-| `window_glass*` | malla | Cambia de color entre día y noche |
-| `lamp_shade*` | malla | Se ilumina de noche (emisión) |
-| `lamp_light` | **Empty** | Posición de la luz cálida de la lámpara |
-| `monitor_light` | **Empty** | Posición de la luz azul de los monitores |
-| `chair` | Empty (padre) u objeto | Se balancea y salta al cambiar la pantalla |
-| `plant` | Empty (padre) u objeto | Se balancea suavemente |
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
 
-Notas:
+4. **Open your browser:**
+   Navigate to the local host URL provided in your terminal (usually `http://localhost:5173` or `http://localhost:3000`) to view the 3D portfolio in action.
 
-- Three.js cambia espacios por `_` y elimina los puntos: `screen.001` llega como `screen001`
-  (sigue coincidiendo, porque solo se compara el inicio del nombre).
-- Para `chair` y `plant`, agrupa las partes bajo un **Empty** con ese nombre y coloca su origen en la
-  base del objeto; si no, girará alrededor del origen del mundo.
-- Si no pones `lamp_light` / `monitor_light`, se usan las posiciones de respaldo de
-  `CONFIG.lights` (ajústalas a tu modelo).
-- Si no hay mallas `screen*`, el botón "Cambiar pantalla" se oculta solo.
+## 🎨 3D Assets
 
-### Modelo normal (PBR) o texturas horneadas
+The central piece of this portfolio is the low-poly anglerfish. It was modeled, textured, and exported entirely in **Blender** before being integrated into the Three.js scene to allow the camera to navigate inside and around the model.
 
-- `baked: false` (por defecto): se respetan los materiales del `.glb`, con luces y sombras en
-  tiempo real. El modo noche cambia las luces.
-- `baked: true`: los materiales pasan a `MeshBasicMaterial` (la textura ya trae la luz), se
-  desactivan las sombras y el tone mapping, y el modo noche **oscurece con un tinte**
-  (`themes.night.bakedTint`). Si quieres un horneado distinto para la noche (dos texturas), el
-  siguiente paso natural es intercambiar el `map` al cambiar de tema en `theme.js`.
+## 🤝 Contributing
 
-### Ajuste automático (`fit`)
+Since this is a personal portfolio, direct contributions to the main design aren't actively sought, but if you spot a bug or a way to optimize the Three.js render loop, feel free to open an issue or pull request!
 
-Con `fit: true`, el modelo se centra en X/Z, se apoya en `y = 0` y se escala para que su lado más largo
-mida `targetSize` (6.4 unidades). Así los estados de scroll de `CONFIG.scroll` funcionan sin tocar
-nada. Usa `rotationY` para girarlo si tu habitación mira hacia otro lado, y mueve la cámara con
-`CONFIG.camera` si necesitas otro encuadre.
+## 📄 License
 
-## Luces: ojo con las unidades
-
-Three.js ≥ r155 usa unidades físicas: las luces direccionales y ambientales necesitan ≈ π veces la
-intensidad antigua, y las puntuales se miden en candelas. Los valores de `CONFIG.themes` ya están
-calibrados para la habitación procedural; con tu modelo es normal que tengas que subir o bajar
-`ambient`, `sun`, `deskLight` y `monitorLight` hasta que se vea bien de día y de noche.
-
-## Contenido
-
-- Textos fijos (hero, sobre mí, contacto): `index.html`, busca los comentarios `TODO`.
-- Proyectos: `src/content.js`. Si pones `url`, la tarjeta es un enlace.
-- Imagen para redes: descomenta y completa las etiquetas `og:image` / `og:url` en `index.html`.
-
-## Formulario de contacto
-
-El formulario hace `POST` (FormData, `Accept: application/json`) a `CONFIG.contact.endpoint`.
-Funciona con Formspree o con tu propia API. Mientras el valor esté vacío, funciona en **modo demo**
-y no envía nada. Incluye un campo honeypot (`_gotcha`); valida y limita en el servidor de todos modos.
-
-## Accesibilidad y rendimiento (ya incluido)
-
-- Respeta `prefers-reduced-motion` y `prefers-color-scheme`; recuerda la elección de tema.
-- Pausa el render con la pestaña oculta; limita el pixel ratio en móvil.
-- Sin WebGL (o si falla el contexto) la página sigue funcionando con un fondo estático.
-
-## Antes de publicar
-
-- Tailwind por CDN compila en el navegador: para producción usa Tailwind CLI o Vite
-  (`tailwind.config.js` se convierte en un módulo normal).
-- Comprime el `.glb` (Draco o `gltf-transform optimize`) y revisa su peso.
-- Sirve el sitio con HTTPS y cabeceras de caché para `models/` y las texturas.
+Developed by Ángel Roberto Gutiérrez Ruiz ([Anrogu](https://github.com/Anrogu)).
