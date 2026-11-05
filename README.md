@@ -1,26 +1,34 @@
-# 🐟 Interactive 3D Web Portfolio
+# 🏠 Interactive 3D Isometric Portfolio
 
-Welcome to my personal portfolio! This project is an immersive, 3D interactive web experience featuring a custom-designed, low-poly anglerfish. It showcases my work and skills through dynamic scroll-based camera navigation and real-time 3D rendering in the browser.
+Welcome to my personal portfolio! This project is an interactive 3D web experience set inside an isometric room that I modeled myself in Blender. It showcases my work and skills in real-time 3D, right in the browser.
+
+> 🚧 **Work in progress.** Features and content are still being added.
 
 ## 🚀 Key Features
 
-*   **Immersive 3D Environment:** Navigate through a scene built around a custom low-poly anglerfish mesh.
-*   **Scroll-Driven Navigation:** Camera movements, object rotations, and scene transitions are tightly bound to the user's scroll position.
-*   **Fluid Scrolling:** Features a smooth, frictionless scrolling mechanic for a premium user experience.
-*   **Optimized Web Rendering:** Lightweight 3D assets designed specifically for fast web performance without sacrificing visual quality.
+*   **Custom 3D Room:** An isometric scene built from my own Blender model, exported as `.glb` and rendered with Three.js.
+*   **Animated Interactions:** Smooth transitions and animations powered by GSAP.
+*   **Modern Styling:** Interface and layout built with Tailwind CSS.
+*   **Lightweight Assets:** The 3D model is optimized for fast loading on the web.
 
 ## 🛠️ Tech Stack
 
-This portfolio bridges the gap between 3D modeling and modern web development:
-
 *   **3D Modeling:** Blender 🧊
 *   **WebGL & 3D Rendering:** Three.js 🌐
-*   **Animations:** GSAP (ScrollTrigger) 🎬
-*   **Smooth Scroll:** Lenis 📜
+*   **Animations:** GSAP 🎬
+*   **Styling:** Tailwind CSS 🎨
+
+## 📁 Project Structure
+
+```
+portfolio/
+├── models/              # 3D assets (.glb exported from Blender)
+├── src/                 # Application source code
+├── index.html           # Entry point
+└── tailwind.config.js   # Tailwind configuration
+```
 
 ## ⚙️ Prerequisites
-
-To run this project locally, ensure you have the following installed:
 
 *   [Node.js](https://nodejs.org/)
 *   npm (or yarn/pnpm)
@@ -44,15 +52,15 @@ To run this project locally, ensure you have the following installed:
    ```
 
 4. **Open your browser:**
-   Navigate to the local host URL provided in your terminal (usually `http://localhost:5173` or `http://localhost:3000`) to view the 3D portfolio in action.
+   Go to the local URL shown in your terminal (usually `http://localhost:5173`).
 
 ## 🎨 3D Assets
 
-The central piece of this portfolio is the low-poly anglerfish. It was modeled, textured, and exported entirely in **Blender** before being integrated into the Three.js scene to allow the camera to navigate inside and around the model.
+The room was modeled, textured and exported entirely in **Blender** as a `.glb` file, then loaded into the Three.js scene.
 
 ## 🤝 Contributing
 
-Since this is a personal portfolio, direct contributions to the main design aren't actively sought, but if you spot a bug or a way to optimize the Three.js render loop, feel free to open an issue or pull request!
+This is a personal portfolio, so contributions to the main design aren't actively sought. If you spot a bug or a way to improve performance, feel free to open an issue or pull request!
 
 ## 📄 License
 
